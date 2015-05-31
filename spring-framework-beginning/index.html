@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Spring Framework</title>
+
+		<meta name="description" content="A framework for easily creating applications in Java">
+		<meta name="author" content="Andrzej Kostrzewa">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Spring Framework</h1>
+					<h3>Podstawy</h3>
+					<img src="img/springs.png" alt="spring" style="border:none; background:transparent;" />
+					<p>
+						<small>Andrzej Kostrzewa</small>
+					</p>
+				</section>
+
+				<section>
+					<h2>Agenda</h2>
+					<ul>
+						<li>Wstęp</li>
+                        <li>Pare słów o wstrzykiwaniu zależności (IoC)</li>
+                        <li>Przykłady użycia kontenera IoC w Springu</li>
+                        <li>Programowanie aspektowe (AOP)</li>
+                        <li>Najprostszy aspekt</li>
+                        <li>Podsumowanie</li>
+					</ul>
+				</section>
+                
+                <section style="background: url(img/spring-logo.png) 100px -48px no-repeat;">
+					<h2 style="float:left; margin:50px 0 0 250px">Wstęp </h2>
+                        <img src="img/pojjo.png" alt="pojo" style="float:right; margin-right:20px; margin-top:-50px; vertical-align:center; ;"/>
+                    <ul>
+                        <li>Posiada wiele gotowych komponentów</li>
+                        <li>Jest nieinwazyjny</li>
+                        <li>Uniwersalny</li>
+                        <li>Pozwala na łatwą wymiane elementów aplikacji</li>
+                        <li>Bazuje na interfejsach</li>
+                        <li>Jest testowalny (obiekty POJO)</li>
+                        <li>Bez problemu można go zintegrować z innymi frameworkami np. Hibernate</li>
+                    </ul>
+                    <img src="img/hibernate.png" alt="hibernate" style="float:right; margin-right:200px;"/>
+                    <aside class="notes">
+                        Nieinwazyjność - klasy aplikacji są niezależne od frameworka – nie muszą rozszerzać jego klas czy interfejsów <br>
+                        Uniwersalność (nie tylko aplikacje internetowe) 
+                        Abstrakcje pomiędzy kodem a usługami
+                        POJO - klasy, które:<br>
+                        –Nie dziedziczą po innych klasach<br>
+                        –Nie implementują żadnych szczególnych interfejsów<br>
+                        –Generalnie nie mają żadnych restrykcji<br>
+                        –Nie muszą wiedzieć w jaki sposób będą używane<br>
+                    </aside>
+				</section>
+                
+                <section>
+					<h2>Odwrócenie zależności <span style="text-transform: none">(IoC)</span></h2>
+					<ul>
+						<li>Idea oseparowania (decouple)</li>
+                        <li>Poszczególne elementy aplikacji powinny jak najmniej od siebie wzajemnie zależeć</li>
+                        <li>Moduł nadrzędny nie powinien zależeć od implementacji modułu podrzędnego</li>            
+					</ul>
+                    <img src="img/ioc.png" alt="ioc" style="float:right; margin-right:200px;"/>
+                    <aside class="notes">
+                        Najprostsze rozwiązanie: użycie interfejsów i fabryk wstrzykujących odpowiednie implementacje
+                    </aside>
+				</section>
+                
+				<section>
+					<section>
+					<h2>Przykład użycia Springa</h2>
+					<ul>
+						<li>Dołączenie odpowiednich bibliotek:
+                            <ul>
+                                <li>Dawniej: spring.jar</li>
+                                <li>Obecnie: org.springframework.*-4.x.x.RELEASE.jar (ok 20 bibliotek)</li>
+                            </ul>
+                        </li>
+                        <li>Przygotowanie pliku konfiguracyjnego XML</li>
+                        <li>Inicjalizacja kontenera w programie np. w funkcji Main</li>               
+					</ul>
+				    </section>
+                    
+					<section>
+						<h2>Przygotowanie pliku konfiguracyjnego XML</h2>
+						<pre><code class="xml" data-trim contenteditable>
+                            <?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+   <bean id="Sample" class="andrew.Sample">
+       <property name="message" value="Spring działa!"></property>
+   </bean>
+
+</beans>
+					    </code></pre>
+					</section>
+					<section>
+						<h2>Inicjalizacja kontenera</h2>
+						<p>Ładowanie kontenera:</p>
+                        <pre class="fragment fade-out"><code class="java" data-trim contenteditable >
+ ApplicationContext context = new ClassPathXmlApplicationContext("Beans.xml");
+					    </code></pre> <pre class="fragment fade-in" style="margin-top:-45px"><code class="java" data-trim contenteditable >
+ new ClassPathXmlApplicationContext(new String[] {"plik1.xml", "plik2.xml"});
+					    </code></pre>
+					    <p>Wydobycie beana:</p>
+                        <pre><code class="java" data-trim contenteditable>
+  Sample sample = (Sample) context.getBean("Sample");
+					    </code></pre>
+				        <p>Zazwyczaj robi się to tylko raz przy uruchomieniu</p>
+                        <aside class="notes">
+                            Kontener moze być ładowany jako pojedyńczy plik, lub jako tablica<br>
+                            Reszta aplikacji to beany wzajemnie ze sobą powiązane
+                        </aside>
+					</section>
+                    <section>
+						<h2>Przykład</h2>
+                        <a href="#/4/1"  >Beans.xml</a>
+                        <pre><code class="java" data-trim contenteditable>
+                        package andrew;
+public class Sample {
+	private String message;
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	public void getMessage() {
+		System.out.println("Wiadomość: " + message);
+	}
+}
+</code></pre>
+                        <pre><code class="java" style="overflow:hidden" data-trim contenteditable>
+ package andrew;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+public class MainApp {
+   public static void main(String[] args) {
+      ApplicationContext context = new ClassPathXmlApplicationContext("Beans.xml");
+
+     Sample sample = (Sample) context.getBean("Sample");
+     sample.getMessage();
+   }
+}
+					    </code></pre>
+                        <aside class="notes">
+                            Gettery i settery<br>
+                            Bean o nazwie Sample<br>
+                            Inicjalizacja kontenera <br>
+                            Wydobycie z niego Sample
+                        </aside>
+					</section>
+                    <section>
+						<h2>Przykład</h2>
+                        <p>Tworzenie beana z użyciem konstruktora</p>
+                        <pre><code class="xml" data-trim contenteditable>
+                        <bean id="kredyt" class="andrew.Kredyt">
+<constructor-arg index="0" value="10000"></constructor-arg>
+<constructor-arg index="1" value="0.05"></constructor-arg>
+<constructor-arg index="2" value="2"></constructor-arg>
+</bean>
+                        </code></pre>
+                    </section>
+                    <section>
+						<h2>Tworzenie referencji</h2>
+                        <p>Często jeden bean używa innego beana</p>
+                        <pre><code class="xml" data-trim contenteditable>
+                        <bean id="nadrzedny" class="klasa">
+<property name="nazwa" ref="podrzedny">
+</bean>
+<bean id="podrzedny" class="klasa">
+…
+</bean>
+                        </code></pre>
+                          <aside class="notes">
+                                Wystarczy odpowiednio skonfigurować kontener<br>
+                                Bean zostaje automatycznie wstrzyknięty                     
+                        </aside>
+                    </section>
+				</section>
+
+				<section>
+					<h2>Podsumowanie - kontener <span style="text-transform: none">IoC</span></h2>
+					<ul>
+						<li>Spring posiada kontenery IoC:
+                            <ul>
+                                <li>ApplicationContext</li>
+                                <li>FactoryBean</li>
+                            </ul>
+                        </li>
+                        <li>Kontener konfigurowany jest w pliku/ach XML lub przez adnotacje (od wersji 2.5)</li>
+                        <li>Wszystkie zależności między klasami znajdują się tylko w plikach konfiguracyjnych</li>
+                        <li>Nie trzeba tworzyć nowych obiektów poprzez <i>new</i>, ponieważ kontener sam wyprodukuje obiekt na żądanie</li>
+                        <li>Jedna instancja w kontenerze</li>
+					</ul>
+                    <aside class="notes">
+                        Kontener (fabryka) wyprodukuje obiekt na żądanie<br>
+                        Konieczne jednak powiązanie (wstrzyknięcie zależnego obiektu)<br>
+                        Trzy sposoby wstrzykiwania zależności:<br>
+                        –przez konstruktor<br>
+                        –przez setter<br>
+                        –przez wstrzykiwanie metod<br>
+                         Bean to singleton                         
+                        </aside>                   
+				</section>
+                    
+                <section>
+                    <section>
+                        <h2>Programowanie aspektowe (AOP)</h2>
+                        <ul>
+                            <li>Pozwala na uzupełnianie funkcjonalności gotowych klas bez konieczności zmiany ich kodu</li>
+                            <li>
+                            Najczęstsze metody:
+                                <ul>
+                                <li>ingerencja w byte-code w celu dopisania funkcjonalności (AspectJ)</li>
+                                <li>tworzenie oddzielnych obiektów przechwytujących (Spring AOP)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                           <aside class="notes">
+                        Aspect Oriented Programming - programowanie aspektowe
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Terminologia AOP</h2>
+                         <ul>
+                                <li>Join-point – miejsce, do którego można dopiąć kod</li>
+                                <li>Advice – kod, który uruchamia w miejscu join-pointu</li>
+                                <li>Pointcut – definicja łącząca advice z join-point</li>                            
+                        </ul>
+                        <aside class="notes">
+                              Join-point - Zwykle przed lub po jakiejś metodzie <br>
+                              Advice - Jakaś metoda
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Konfiguracja AOP</h2>
+                         <ul>
+                                <li>3 nowe jary:
+                                    <ul><li>aspectjrt.jar, aspectjweavwer.jar,aopalliance.jar</li></ul></li>
+                                <li>Nowy namespace do &lt;beans&gt; :
+                                    <pre><code class="xml" data-trim contenteditable>xmlns:aop="http://www.springframework.org/schema/aop"</code></pre>
+                                    <pre><code class="xml" data-trim contenteditable>
+                                    xsi:schemaLocation="http://www.springframework.org/schema/aop 
+                                    http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"></code></pre>
+                                    </li>
+                                <li>Wpis do kontenera:
+                             <pre><code class="xml" data-trim contenteditable>
+                             <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+                             </code></pre>
+                             </li>                        
+                        </ul>
+                          <aside class="notes">
+                              Elementy AOP można definiować w XML i przez adnotacje
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Przykład</h2>
+                         <ul>                     
+                                <li>Klasa z adnotacją @Aspect
+                                    <pre><code class="java" data-trim contenteditable>@Aspect
+    public class MyAspect { ... }
+    </code></pre>
+                                    </li>
+                                <li>Zarejestrowana jak inne beany
+                             <pre><code class="xml" data-trim contenteditable>
+                             <bean class="andrew.MyAspect"></bean>
+                             </code></pre>
+                             </li>      
+                             <li>Zawierająca metodę (advice) i definicję pointcutu
+                             <pre><code class="java" data-trim contenteditable>
+                             @Before("execution(* andrew.Sample.*(..))")
+    public void check() {
+        System.out.println("Działa!");
+    }
+                             </code></pre>
+                             </li>                           
+                        </ul>
+                          <aside class="notes">
+                              Uwaga! Sample musi być interfejsem lub implementować jakiś interfejs
+                        </aside>
+                    </section>
+                    
+                    <section>
+                        <h2> PODSUMOWANIE - AOP</h2>
+                         <ul>                     
+                            <li>Dodawanie nowej funkcjonalności bez potrzeby ingerencji w starą</li> 
+                            <li>Ograniczenie ilości kodu dla standardowych operacji</li>
+                            <li>Wygoda</li>
+                        </ul>
+                        <aside class="notes">
+                            Znaczne ograniczenie ilości kodu przy pewnych standardowych operacjach<br>
+                            –specjalna reakcja na szczególne błędy<br>
+                            –obsługa transakcji<br>
+                            –debugowanie aplikacji<br>
+                            –profilowanie<br>
+                            –kontrola uprawnień i parametrów<br>
+                        </aside>
+                    </section>
+                   
+                </section>
+                    
+                    <section>
+					<h2>Podsumowanie</h2>
+					<ul>
+                        <li>Tworzymy kod i interfejsy go udostępniające</li>
+                        <li>Tworzymy konfigurację kontenera "spinającą" wszystkie elementy naszej aplikacji</li>
+                        <li>Dodanie nowej funkcjonalności to dodanie klasy i zmiana konfiguracji</li>
+                        <li>Wszystkie powiązania w jednym miejscu</li>
+                        <li>
+                        Dodatkowe możliwości:
+                            <ul>
+                                <li>Nie trzeba definiować wszystkich powiązań samemu</li>                                
+                                <li>Definicje beanów można przenieść z pliku XML do adnotacji</li>
+                                <li>Dzieki AOP możliwe jest dodanie nowej funkcjonalności bez potrzeby ingerencji w kod</li>
+                            </ul>
+                        </li>
+                    </ul>     
+                        <aside class="notes">
+                            Spring może sam poszukać pasujących obiektów
+                        </aside>
+				</section>
+
+				<section>
+					<h1>Dziękuje za uwagę!</h1>					
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', 
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
